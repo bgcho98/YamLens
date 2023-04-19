@@ -22,6 +22,17 @@
     </p>
   ]]></description>
 
+    <change-notes>
+        <![CDATA[
+  <br> 1.0.0
+  <br> -- Initial release
+  <br> 1.0.1
+  <br> -- Feature
+  <br> --- add export csv
+  <br> --- add filter by property name
+]]>
+    </change-notes>
+
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>

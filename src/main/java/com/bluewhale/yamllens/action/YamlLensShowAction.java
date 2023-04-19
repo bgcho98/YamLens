@@ -13,8 +13,9 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
@@ -22,12 +23,26 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.bluewhale.yamllens.action.PropertyContainer.DEFAULT_PROFILE;
 import static com.intellij.openapi.actionSystem.CommonDataKeys.VIRTUAL_FILE_ARRAY;
 
 public class YamlLensShowAction extends AnAction {
-	private static final String DEFAULT_PROFILE = "default";
 	private static final String PROPERTY_OF_ACTIVATE_PROFILE = "spring.config.activate.on-profile";
 	private static final Pattern PROFILE_PATTERN = Pattern.compile("application-(.*).yml");
+
+	private static void exportCsv(PropertyContainer propertyContainer, JFrame frame) {
+		var fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle("Save CSV File");
+		if (fileChooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
+			var fileToSave = fileChooser.getSelectedFile();
+			var csvFileWriter = new CsvFileWriter();
+			try {
+				csvFileWriter.writeToCsvFile(fileToSave.getAbsolutePath(), propertyContainer);
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
+		}
+	}
 
 	@Override
 	public void actionPerformed(AnActionEvent e) {
@@ -38,52 +53,79 @@ public class YamlLensShowAction extends AnAction {
 		}
 
 		// 테이블 생성 및 표시
-		var model = buildTableModel(psiFiles);
+		var propertyContainer = buildPropertyContainer(psiFiles);
 
 		// 테이블 생성 및 표시
-		showUi(model);
+		showUi(propertyContainer);
 	}
 
-	@NotNull
-	private DefaultTableModel buildTableModel(VirtualFile[] psiFiles) {
-		var model = new DefaultTableModel();
-		model.addColumn("Property");
-		model.addColumn("Profile");
-		model.addColumn("Value");
-
+	private PropertyContainer buildPropertyContainer(VirtualFile[] psiFiles) {
 		var profilePropertyMap = getProfilePropertyMap(psiFiles);
 		var profiles = getProfiles(profilePropertyMap.keySet());
 		var propertyProfileMap = getPropertyProfileMap(profilePropertyMap);
 
-		propertyProfileMap.forEach((propertyName, env) ->
-									   profiles.forEach(profile ->
-															appendProperties(model, propertyName, env, profile)
-													   ));
-		return model;
+		return new PropertyContainer(profiles, profilePropertyMap, propertyProfileMap);
 	}
 
-	private void showUi(DefaultTableModel model) {
-		var table = new JBTable(model);
+	private void showUi(PropertyContainer propertyContainer) {
+		var table = new JBTable();
+		filterTableData(table, propertyContainer, null);
+
+		var scrollPane = new JBScrollPane(table);
+		var exportCsvButton = new JButton("Export CSV");
+		var propertyFilter = new JTextField(20);
+
+		var headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		headerPanel.setPreferredSize(new Dimension(900, 45));
+		headerPanel.add(exportCsvButton);
+		headerPanel.add(propertyFilter);
+
+		var bodyPanel = new JPanel(new BorderLayout());
+		bodyPanel.add(headerPanel, BorderLayout.NORTH);
+		bodyPanel.add(scrollPane, BorderLayout.CENTER);
+
+		var frame = new JFrame("YAML Lens");
+		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+		var contentPane = frame.getContentPane();
+		contentPane.add(bodyPanel);
+
+		exportCsvButton.addActionListener(e -> exportCsv(propertyContainer, frame));
+
+		propertyFilter.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {}
+
+			@Override
+			public void keyPressed(KeyEvent e) {}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				filterTableData(table, propertyContainer, propertyFilter.getText());
+			}
+		});
+
+		frame.pack();
+		frame.setVisible(true);
+
+	}
+
+	private void filterTableData(JBTable table, PropertyContainer propertyContainer, String filterText) {
+		table.setModel(propertyContainer.getTableModel(filterText));
+
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		table.setPreferredScrollableViewportSize(new Dimension(900, 800));
+		table.setPreferredScrollableViewportSize(new Dimension(900, 700));
 
 		var columnModel = table.getColumnModel();
 		columnModel.getColumn(0).setPreferredWidth(300);
 		columnModel.getColumn(1).setPreferredWidth(200);
 		columnModel.getColumn(2).setPreferredWidth(400);
-
-		var scrollPane = new JBScrollPane(table);
-		var frame = new JFrame("YAML Lens");
-		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		frame.getContentPane()
-			 .add(scrollPane);
-		frame.pack();
-		frame.setVisible(true);
 	}
 
 	@NotNull
 	private Map<String, Map<String, String>> getProfilePropertyMap(VirtualFile[] psiFiles) {
 		return Arrays.stream(psiFiles)
+					 .filter(file -> StringUtils.containsAny(file.getExtension(), "yml", "yaml"))
 					 .map(file -> new FileSystemResource(file.getPath()))
 					 .map(this::getLoad)
 					 .flatMap(Collection::stream)
@@ -103,10 +145,6 @@ public class YamlLensShowAction extends AnAction {
 																											   o -> o.getValue().getOrDefault(name, StringUtils.EMPTY))),
 														   this::uniqKeysMapMerger,
 														   TreeMap::new));
-	}
-
-	private void appendProperties(DefaultTableModel model, String propertyName, Map<String, String> env, String profile) {
-		model.addRow(new Object[] {propertyName, profile, env.getOrDefault(profile, StringUtils.EMPTY)});
 	}
 
 	private List<PropertySource<?>> getLoad(Resource resource) {
