@@ -1,0 +1,38 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.bluewhale.YamlLens</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>YamlLens</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="bgcho98@gmail.com" url="https://github.com/bgcho98/yamllens">bluewhale</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description><![CDATA[
+    <p>
+    YamlLens is an IntelliJ IDEA plugin that provides a visual viewer for YAML configuration files used in Spring Boot applications.
+    With YamlLens, you can easily navigate through multiple configuration files and profiles, and quickly see the values of each property for each profile in a table format.
+    This plugin is designed to simplify the process of managing and debugging YAML configurations, and to help developers easily identify and resolve configuration-related issues.
+    Whether you're a Spring Boot developer or just working with YAML files in IntelliJ IDEA, YamlLens can save you time and improve your productivity.
+    </p>
+  ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+    <actions>
+        <action id="YamlLens.showAction" class="com.bluewhale.yamllens.action.YamlLensShowAction" text="Show Yaml Lens" description="Displays a table with the values of YAML properties">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
