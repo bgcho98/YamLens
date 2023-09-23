@@ -1,10 +1,10 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.12.0"
+    id("org.jetbrains.intellij") version "1.15.0"
 }
 
 group = "com.bluewhale"
-version = "1.0.1"
+version = "1.0.2"
 
 repositories {
     mavenCentral()
@@ -13,13 +13,14 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.1.4")
+    version.set("2023.2.2")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf())
 }
 
 dependencies {
+    implementation("org.yaml:snakeyaml:1.33")
     implementation("org.springframework.boot:spring-boot:2.7.5")
 }
 
@@ -32,7 +33,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("221")
-        untilBuild.set("231.*")
+        untilBuild.set("232.*")
     }
 
     signPlugin {
