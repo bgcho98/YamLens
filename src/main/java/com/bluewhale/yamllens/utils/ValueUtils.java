@@ -1,6 +1,5 @@
 package com.bluewhale.yamllens.utils;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class ValueUtils {
@@ -12,8 +11,8 @@ public class ValueUtils {
 
 	public static String getEscapedValue(String value) {
 		if (StringUtils.isNumeric(value)) {
-			return StringEscapeUtils.escapeCsv("=\"" + value + "\"");
+			return ValueUtils.getEscapedValue("=\"" + value + "\"");
 		}
-		return StringEscapeUtils.escapeCsv(value);
+		return ValueUtils.getEscapedValue(value);
 	}
 }
