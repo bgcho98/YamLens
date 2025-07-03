@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.bluewhale"
-version = "1.0.5"
+version = "1.0.6"
 
 repositories {
     mavenCentral()
@@ -13,14 +13,14 @@ repositories {
 }
 
 intellij {
-    version.set("2024.3.4")
+    version.set("2025.1.3")
     type.set("IC") // IntelliJ Community Edition
     plugins.set(listOf()) // 필요한 플러그인 ID가 있다면 여기에 추가
 }
 
 dependencies {
-    implementation("org.yaml:snakeyaml:1.33")
-    implementation("org.springframework.boot:spring-boot:2.7.5")
+    implementation("org.yaml:snakeyaml:2.4")
+    implementation("org.springframework.boot:spring-boot:3.4.3")
 }
 
 java {
@@ -31,8 +31,12 @@ java {
 
 tasks {
     patchPluginXml {
-        sinceBuild.set("243")
-        untilBuild.set("243.*")
+        sinceBuild.set("251")
+        untilBuild.set("252.*")
+    }
+
+    buildSearchableOptions {
+        enabled = false
     }
 
     signPlugin {
@@ -48,4 +52,15 @@ tasks {
     test {
         useJUnitPlatform()
     }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
 }

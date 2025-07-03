@@ -2,6 +2,7 @@ package com.bluewhale.yamllens.action;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
@@ -17,8 +18,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -69,16 +70,23 @@ public class YamlLensShowAction extends AnAction {
 
 	private void showUi(PropertyContainer propertyContainer) {
 		var table = new JBTable();
-		filterTableData(table, propertyContainer, null);
+		filterTableData(table, propertyContainer, null, null, null);
 
 		var scrollPane = new JBScrollPane(table);
 		var exportCsvButton = new JButton("Export CSV");
-		var propertyFilter = new JTextField(20);
+		var propertyFilter = new JTextField(15);
+		var valueFilter = new JTextField(15);
+		var profileSelector = new ComboBox<String>(propertyContainer.getProfilesForSelect());
 
 		var headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		headerPanel.setPreferredSize(new Dimension(900, 45));
 		headerPanel.add(exportCsvButton);
+		headerPanel.add(new JLabel("Property Filter:"));
 		headerPanel.add(propertyFilter);
+		headerPanel.add(new JLabel("Value Filter:"));
+		headerPanel.add(valueFilter);
+		headerPanel.add(new JLabel("Profile:"));
+		headerPanel.add(profileSelector);
 
 		var bodyPanel = new JPanel(new BorderLayout());
 		bodyPanel.add(headerPanel, BorderLayout.NORTH);
@@ -101,17 +109,32 @@ public class YamlLensShowAction extends AnAction {
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				filterTableData(table, propertyContainer, propertyFilter.getText());
+				filterTableData(table, propertyContainer, propertyFilter.getText(), valueFilter.getText(), (String)profileSelector.getSelectedItem());
 			}
 		});
+
+		valueFilter.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {}
+
+			@Override
+			public void keyPressed(KeyEvent e) {}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				filterTableData(table, propertyContainer, propertyFilter.getText(), valueFilter.getText(), (String)profileSelector.getSelectedItem());
+			}
+		});
+
+		profileSelector.addActionListener(e -> filterTableData(table, propertyContainer, propertyFilter.getText(), valueFilter.getText(), (String)profileSelector.getSelectedItem()));
 
 		frame.pack();
 		frame.setVisible(true);
 
 	}
 
-	private void filterTableData(JBTable table, PropertyContainer propertyContainer, String filterText) {
-		table.setModel(propertyContainer.getTableModel(filterText));
+	private void filterTableData(JBTable table, PropertyContainer propertyContainer, String propertyFilterText, String valueFilterText, String selectedProfile) {
+		table.setModel(propertyContainer.getTableModel(propertyFilterText, valueFilterText, selectedProfile));
 
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		table.setPreferredScrollableViewportSize(new Dimension(900, 700));
