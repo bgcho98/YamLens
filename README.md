@@ -11,8 +11,9 @@ YamlLens can save you time and improve your productivity.
 
 * https://plugins.jetbrains.com/plugin/21526-yamllens
 
-# Donate Bitcoin
+# Support this project
 
-If you find this project useful, you can donate Litecoin to the following address:
+I build apps and tools to make life easier and more productive.
 
-`3PbjtL5qf1nWdxZaxmTWkmQYPQcHg9cXzG`
+If this project helped you, consider supporting me ☕  
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/pinkmandarin)
