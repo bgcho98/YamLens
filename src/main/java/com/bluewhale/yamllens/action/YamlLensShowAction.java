@@ -24,6 +24,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.bluewhale.yamllens.utils.NaturalOrderComparator.INSTANCE;
+
 import static com.bluewhale.yamllens.action.PropertyContainer.DEFAULT_PROFILE;
 import static com.intellij.openapi.actionSystem.CommonDataKeys.VIRTUAL_FILE_ARRAY;
 
@@ -167,7 +169,7 @@ public class YamlLensShowAction extends AnAction {
 																					 .collect(Collectors.toMap(Map.Entry::getKey,
 																											   o -> o.getValue().getOrDefault(name, StringUtils.EMPTY))),
 														   this::uniqKeysMapMerger,
-														   TreeMap::new));
+														   () -> new TreeMap<>(INSTANCE)));
 	}
 
 	private List<PropertySource<?>> getLoad(Resource resource) {
